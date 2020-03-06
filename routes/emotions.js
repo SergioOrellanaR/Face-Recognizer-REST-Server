@@ -20,10 +20,10 @@ app.post('/emotion', upload.single('image'), function (req, res)
     {
         if (error)
         {
-            res.status(400).json((
+            res.status(500).json((
                 {
                     ok: false,
-                    results: "Imagen inválida, fotografíe a una persona"
+                    results: "Error al procesar la imagen"
                 }
             ));
         }
@@ -31,14 +31,28 @@ app.post('/emotion', upload.single('image'), function (req, res)
 
         //Elimina imagen
         fs.unlinkSync(`./images/${file_name}`);
-        let maxConfidence = data.FaceDetails[0].Emotions.reduce((prev, current) => prev.Confidence > current.Confidence ? prev : current);
-        res.json((
-            {
-                ok: true,
-                emocion: emotionResult(maxConfidence),
-                results: data.FaceDetails[0]
-            }
-        ));
+
+        if (data && data.FaceDetails.length)
+        {
+            let maxConfidence = data.FaceDetails[0].Emotions.reduce((prev, current) => prev.Confidence > current.Confidence ? prev : current);
+            res.json((
+                {
+                    ok: true,
+                    emocion: emotionResult(maxConfidence),
+                    results: data.FaceDetails[0]
+                }
+            ));
+        }
+        else
+        {
+            res.status(400).json((
+                {
+                    ok: false,
+                    results: "Rostro no detectado, fotografíe a una persona"
+                }
+            ));
+        }
+
     });
 });
 
