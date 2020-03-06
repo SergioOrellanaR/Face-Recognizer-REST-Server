@@ -103,6 +103,7 @@ app.get('/persons', function (req, res)
                     res.status(200).json((
                         {
                             ok: true,
+                            CollectionId,
                             cantidad: collectionData.FaceCount,
                             data
                         }
