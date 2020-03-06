@@ -2,11 +2,13 @@ require('./config/config.js');
 var bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
+const mongoose = require('mongoose');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 //Configuración global de rutas
 app.use(require('./routes/routes'));
+app.use(express.static('images'));
 
 let port = 3500;
 
@@ -51,6 +53,25 @@ let port = 3500;
 //     }
 
 // });
+let connectionOptions = {
+    useCreateIndex: true,
+    useNewUrlParser: true,
+    useUnifiedTopology:true,
+    useFindAndModify: false
+};
+
+
+
+mongoose.connect(process.env.URLDB, connectionOptions, (err, res) => {
+    if (err)
+    {
+        throw err;
+    }
+    else
+    {
+        console.log('Base de datos online!!');
+    }
+});
 
 app.listen(port, () =>
 {

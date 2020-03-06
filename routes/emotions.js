@@ -1,20 +1,8 @@
 const express = require('express');
 const app = express();
-require('../config/config.js');
+const { rekognition, storage, multer } = require('../config/config.js');
 const fs = require('fs');
-const multer = require('multer');
-const storage = multer.diskStorage({
-    destination: function (req, file, cb)
-    {
-        cb(null, 'images/')
-    },
-    filename: function (req, file, cb)
-    {
-        cb(null, file.originalname)
-    }
-});
 const upload = multer({ storage: storage });
-const { rekognition } = require('../config/config.js');
 const emotionResult = require('../helpers/emotionHelper').emotionResult;
 
 app.post('/emotion', upload.single('image'), function (req, res)
@@ -40,8 +28,10 @@ app.post('/emotion', upload.single('image'), function (req, res)
             ));
         }
 
-        let maxConfidence = data.FaceDetails[0].Emotions.reduce((prev, current) => prev.Confidence > current.Confidence ? prev : current);
 
+        //Elimina imagen
+        fs.unlinkSync(`./images/${file_name}`);
+        let maxConfidence = data.FaceDetails[0].Emotions.reduce((prev, current) => prev.Confidence > current.Confidence ? prev : current);
         res.json((
             {
                 ok: true,
