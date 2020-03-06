@@ -30,6 +30,11 @@ let personSchema = new Schema(
         {
             type: String,
             required: [true, 'Es necesario ingresar al menos una imagen']
+        },
+        faceID:
+        {
+            type: String,
+            required: [true, 'Error de FaceID, contacte al desarrollador']
         }
     }
 );

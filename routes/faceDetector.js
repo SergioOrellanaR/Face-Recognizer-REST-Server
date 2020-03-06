@@ -61,6 +61,55 @@ app.post('/createCollection', function (req, res)
     });
 });
 
+app.get('/persons', function (req, res)
+{
+    var params = {
+        CollectionId: "face-recognizer-0.0.1"
+    };
+
+    rekognition.describeCollection(params, function (err, collectionData)
+    {
+        if (err)
+        {
+            res.status(500).json((
+                {
+                    ok: false,
+                    results: "Error al obtener información",
+                    error: err
+                }
+            ));
+        }
+        else
+        {
+            rekognition.listFaces(params, function (err, data)
+            {
+                if (err)
+                {
+                    res.status(500).json((
+                        {
+                            ok: false,
+                            results: "No se pueden listar rostros",
+                            error: err
+                        }
+                    ));
+                }
+                else
+                {
+                    res.status(200).json((
+                        {
+                            ok: true,
+                            cantidad: collectionData.FaceCount,
+                            data
+                        }
+                    ));
+                }
+            });
+        }
+
+    });
+
+});
+
 app.post('/searchPersonByImage', upload.single('image'), function (req, res)
 {
     const file_name = req.file.filename;
@@ -95,6 +144,7 @@ app.post('/searchPersonByImage', upload.single('image'), function (req, res)
             if (data.FaceMatches && data.FaceMatches.length)
             {
                 const parsedEmail = data.FaceMatches[0].Face.ExternalImageId.replace("A", "@");
+                console.log(parsedEmail);
                 Person.findOne({ email: parsedEmail }, (err, personDB) =>
                 {
                     if (err)
@@ -115,7 +165,6 @@ app.post('/searchPersonByImage', upload.single('image'), function (req, res)
                                     ok: false,
                                     err: {
                                         message: 'Usuario no encontrado en DB'
-
                                     }
                                 }
                             );
@@ -150,15 +199,6 @@ app.post('/person', upload.single('image'), function (req, res)
     const bitmap = fs.readFileSync(`./images/${file_name}`);
     let body = req.body;
     const lowerEmail = body.email.toLowerCase();
-    let person = new Person(
-        {
-            name: body.name,
-            email: lowerEmail,
-            profession: body.profession,
-            hobby: body.hobby,
-            imgName: file_name
-        }
-    );
 
     var params = {
         CollectionId: "face-recognizer-0.0.1",
@@ -195,6 +235,17 @@ app.post('/person', upload.single('image'), function (req, res)
             }
             else
             {
+                let person = new Person(
+                    {
+                        name: body.name,
+                        email: lowerEmail,
+                        profession: body.profession,
+                        hobby: body.hobby,
+                        imgName: file_name,
+                        faceID: data.FaceRecords[0].Face.FaceId
+                    }
+                );
+
                 person.save((err, personDB) => 
                 {
                     if (err)
@@ -227,7 +278,6 @@ app.delete('/person/:id', function (req, res)
 {
     let id = req.params.id;
 
-    //Eliminación de registro (NO RECOMENDADO!!, prefiera cambiar estado!!)
     Person.findByIdAndRemove(id, (err, deletedPerson) =>
     {
         if (err)
@@ -254,14 +304,37 @@ app.delete('/person/:id', function (req, res)
             }
             else
             {
-                //Elimina imagen
-                fs.unlinkSync(`./images/${deletedPerson.imgName}`);
-                res.json((
+                var params = {
+                    CollectionId: "face-recognizer-0.0.1",
+                    FaceIds: [
+                        deletedPerson.faceID
+                    ]
+                };
+
+                rekognition.deleteFaces(params, function (err, data)
+                {
+                    if (err)
                     {
-                        ok: true,
-                        person: deletedPerson
+                        res.status(500).json((
+                            {
+                                ok: false,
+                                err
+                            }
+                        ));
+
+                    } // an error occurred
+                    else
+                    {
+                        //Elimina imagen
+                        fs.unlinkSync(`./images/${deletedPerson.imgName}`);
+                        res.json((
+                            {
+                                ok: true,
+                                person: deletedPerson
+                            }
+                        ));
                     }
-                ));
+                });
             }
         }
     })
