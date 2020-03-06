@@ -5,10 +5,12 @@ const { rekognition, storage, multer } = require('../config/config.js');
 const fs = require('fs');
 const upload = multer({ storage: storage });
 
+const CollectionId = process.env.ENV === 'dev' ? "face-recognizer-0.0.1-dev" : "face-recognizer-0.0.1";
+
 app.post('/createCollection', function (req, res)
 {
     var params = {
-        CollectionId: "face-recognizer-0.0.1"
+        CollectionId
     };
 
     rekognition.listCollections({}, function (err, data)
@@ -24,13 +26,23 @@ app.post('/createCollection', function (req, res)
         }
         else 
         {
-            if (data && data.length)
+            if (data.CollectionIds.includes(CollectionId))
+            {
+                res.status(406).json((
+                    {
+                        ok: false,
+                        results: "Ya se ha creado la colección con anterioridad",
+                        requestedCollection: params.CollectionId,
+                        data
+                    }
+                ));
+            }
+            else
             {
                 rekognition.createCollection(params, function (err, data)
                 {
                     if (err) 
                     {
-
                         res.status(500).json((
                             {
                                 ok: false,
@@ -50,13 +62,6 @@ app.post('/createCollection', function (req, res)
                     }
                 });
             }
-
-            res.status(406).json((
-                {
-                    ok: false,
-                    results: "Ya se ha creado la colección con anterioridad"
-                }
-            ));
         }
     });
 });
@@ -64,7 +69,7 @@ app.post('/createCollection', function (req, res)
 app.get('/persons', function (req, res)
 {
     var params = {
-        CollectionId: "face-recognizer-0.0.1"
+        CollectionId
     };
 
     rekognition.describeCollection(params, function (err, collectionData)
@@ -116,7 +121,7 @@ app.post('/searchPersonByImage', upload.single('image'), function (req, res)
     const bitmap = fs.readFileSync(`./images/${file_name}`);
 
     var params = {
-        CollectionId: "face-recognizer-0.0.1",
+        CollectionId,
         FaceMatchThreshold: 96,
         Image: {
             Bytes: new Buffer(bitmap)
@@ -201,7 +206,7 @@ app.post('/person', upload.single('image'), function (req, res)
     const lowerEmail = body.email.toLowerCase();
 
     var params = {
-        CollectionId: "face-recognizer-0.0.1",
+        CollectionId,
         DetectionAttributes: [
         ],
         ExternalImageId: lowerEmail.replace("@", "A"),
@@ -305,7 +310,7 @@ app.delete('/person/:id', function (req, res)
             else
             {
                 var params = {
-                    CollectionId: "face-recognizer-0.0.1",
+                    CollectionId,
                     FaceIds: [
                         deletedPerson.faceID
                     ]
