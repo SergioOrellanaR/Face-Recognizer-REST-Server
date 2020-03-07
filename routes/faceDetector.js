@@ -4,6 +4,7 @@ const Person = require('../models/personDB');
 const { rekognition, storage, multer } = require('../config/config.js');
 const fs = require('fs');
 const upload = multer({ storage: storage });
+const path = require('path');
 
 const CollectionId = process.env.ENV === 'dev' ? "face-recognizer-0.0.1-dev" : "face-recognizer-0.0.1";
 
@@ -202,6 +203,7 @@ app.post('/searchPersonByImage', upload.single('image'), function (req, res)
 app.post('/person', upload.single('image'), function (req, res)
 {
     const file_name = req.file.filename;
+    const fileExtension = path.extname(file_name);
     const bitmap = fs.readFileSync(`./images/${file_name}`);
     let body = req.body;
     const lowerEmail = body.email.toLowerCase();
@@ -241,8 +243,8 @@ app.post('/person', upload.single('image'), function (req, res)
             }
             else
             {
-                const newFileName = lowerEmail.replace("@", "A");
-                fs.renameSync(`./images/${file_name}', './images/${newFileName}`);
+                const newFileName = lowerEmail.replace("@", "A")+fileExtension;
+                fs.renameSync(`./images/${file_name}`, `./images/${newFileName}`);
                 let person = new Person(
                     {
                         name: body.name,
