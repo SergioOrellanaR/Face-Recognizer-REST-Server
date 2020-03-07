@@ -241,13 +241,15 @@ app.post('/person', upload.single('image'), function (req, res)
             }
             else
             {
+                const newFileName = lowerEmail.replace("@", "A");
+                fs.renameSync(`./images/${file_name}', './images/${newFileName}`);
                 let person = new Person(
                     {
                         name: body.name,
                         email: lowerEmail,
                         profession: body.profession,
                         hobby: body.hobby,
-                        imgName: file_name,
+                        imgName: newFileName,
                         faceID: data.FaceRecords[0].Face.FaceId
                     }
                 );

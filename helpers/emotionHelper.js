@@ -24,7 +24,7 @@ const emotionResult = (maxConfidence) =>
             break;
 
         case 'FEAR':
-            emotionName = 'con Miedo?... QUE ES ESO DETRÁS DE TI?!';
+            emotionName = 'tener Miedo?... QUE ES ESO DETRÁS DE TI?!';
             break;
 
         case 'SURPRISED':
