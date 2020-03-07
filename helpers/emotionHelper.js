@@ -23,6 +23,10 @@ const emotionResult = (maxConfidence) =>
             emotionName = 'No muy conforme, tienes algo que resolver?';
             break;
 
+        case 'FEAR':
+            emotionName = 'con Miedo?... QUE ES ESO DETRÁS DE TI?!';
+            break;
+
         case 'SURPRISED':
             emotionName = 'Sorprendido, así es la vida :)';
             break;
@@ -43,4 +47,4 @@ const emotionResult = (maxConfidence) =>
     return emotionName;
 }
 
-module.exports = {emotionResult}
+module.exports = { emotionResult }
