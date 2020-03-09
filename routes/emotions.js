@@ -7,7 +7,6 @@ const emotionResult = require('../helpers/emotionHelper').emotionResult;
 
 app.post('/emotion', upload.single('image'), function (req, res)
 {
-    console.log('CALLING');
     const file_name = req.file.filename;
     const bitmap = fs.readFileSync(`${process.env.FN_REST_PATH}/images/${file_name}`);
     let image = {
