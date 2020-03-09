@@ -120,7 +120,7 @@ app.get('/persons', function (req, res)
 app.post('/searchPersonByImage', upload.single('image'), function (req, res)
 {
     const file_name = req.file.filename;
-    const bitmap = fs.readFileSync(`./images/${file_name}`);
+    const bitmap = fs.readFileSync(`${process.env.FN_REST_PATH}/images/${file_name}`);
 
     var params = {
         CollectionId,
@@ -135,7 +135,7 @@ app.post('/searchPersonByImage', upload.single('image'), function (req, res)
     rekognition.searchFacesByImage(params, function (err, data)
     {
         //Elimina imagen
-        fs.unlinkSync(`./images/${file_name}`);
+        fs.unlinkSync(`${process.env.FN_REST_PATH}/images/${file_name}`);
         if (err)
         {
             res.status(500).json((
@@ -204,7 +204,7 @@ app.post('/person', upload.single('image'), function (req, res)
 {
     const file_name = req.file.filename;
     const fileExtension = path.extname(file_name);
-    const bitmap = fs.readFileSync(`./images/${file_name}`);
+    const bitmap = fs.readFileSync(`${process.env.FN_REST_PATH}/images/${file_name}`);
     let body = req.body;
     const lowerEmail = body.email.toLowerCase();
 
@@ -244,7 +244,7 @@ app.post('/person', upload.single('image'), function (req, res)
             else
             {
                 const newFileName = lowerEmail.replace("@", "A")+fileExtension;
-                fs.renameSync(`./images/${file_name}`, `./images/${newFileName}`);
+                fs.renameSync(`${process.env.FN_REST_PATH}/images/${file_name}`, `${process.env.FN_REST_PATH}/images/${newFileName}`);
                 let person = new Person(
                     {
                         name: body.name,
@@ -336,7 +336,7 @@ app.delete('/person/:id', function (req, res)
                     else
                     {
                         //Elimina imagen
-                        fs.unlinkSync(`./images/${deletedPerson.imgName}`);
+                        fs.unlinkSync(`${process.env.FN_REST_PATH}/images/${deletedPerson.imgName}`);
                         res.json((
                             {
                                 ok: true,

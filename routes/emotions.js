@@ -7,14 +7,16 @@ const emotionResult = require('../helpers/emotionHelper').emotionResult;
 
 app.post('/emotion', upload.single('image'), function (req, res)
 {
+    console.log('CALLING');
     const file_name = req.file.filename;
-    const bitmap = fs.readFileSync(`./images/${file_name}`);
+    const bitmap = fs.readFileSync(`${process.env.FN_REST_PATH}/images/${file_name}`);
     let image = {
         Image: {
             Bytes: new Buffer(bitmap)
         },
         Attributes: ['ALL']
     }
+
 
     rekognition.detectFaces(image, (error, data) =>
     {
@@ -28,9 +30,8 @@ app.post('/emotion', upload.single('image'), function (req, res)
             ));
         }
 
-
         //Elimina imagen
-        fs.unlinkSync(`./images/${file_name}`);
+        fs.unlinkSync(`${process.env.FN_REST_PATH}/images/${file_name}`);
 
         if (data && data.FaceDetails.length)
         {

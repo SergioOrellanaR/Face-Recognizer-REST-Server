@@ -12,7 +12,7 @@ app.use(express.static('images'));
 
 let port = 3500;
 
-
+process.env.FN_REST_PATH = '.';
 ////DETECTOR DE ROSTROS.
 
 
